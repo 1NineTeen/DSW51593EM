@@ -1,20 +1,61 @@
 #!/bin/bash
 
-# Ustawienie zmiennej, która odpowiada za liczbę plików do utworzenia
-num_of_files=100
+function help_message {
+    echo "EM51593 - bash script with various functions"
+    echo ""
+    echo "Usage:"
+    echo "  em51593.sh [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help          Display help message"
+    echo "  -d, --date          Display today's date"
+    echo "  -l, --logs [N]      Create N (default: 100) log files with names logX.txt (X = 1 to N) with script name and date in each file"
+    echo "  -e, --error [N]     Create N (default: 100) error files with names errorX.txt (X = 1 to N) with script name and date in each file"
+    echo "  --init              Clone the entire repository and set the PATH variable"
+    echo "  --version           Display script version"
+}
 
-# Sprawdzenie przekazanych argumentów
+function display_version {
+    echo "EM51593 version 1.0"
+}
+
+
+function create_log_files {
+    local count=${1:-100}    local i=1
+    while [ $i -le $count ]
+    do
+        echo "Creating log$i.txt file..."
+        echo "File name: log$i.txt" > log$i.txt
+        echo "Script name: $0" >> log$i.txt
+        echo "Date: $(date)" >> log$i.txt
+        i=$((i+1))
+    done
+    echo "$count log files created."
+}
+
+
+function create_error_files {
+    local count=${1:-100}
+    local i=1
+    while [ $i -le $count ]
+    do
+        echo "Creating error$i.txt file..."
+        echo "File name: error$i.txt" > error$i.txt
+        echo "Script name: $0" >> error$i.txt
+        echo "Date: $(date)" >> error$i.txt
+        i=$((i+1))
+    done
+    echo "$count error files created."
+}
+
+
 while [[ $# -gt 0 ]]
 do
-    case "$1" in
+    key="$1"
+
+    case $key in
         -h|--help)
-        echo "Dostępne opcje:"
-        echo "--date    Wyświetla dzisiejszą datę"
-        echo "--logs    Tworzy 100 plików logx.txt z datą i nazwą skryptu"
-        echo "--logs n  Tworzy n plików logx.txt z datą i nazwą skryptu"
-        echo "--error   Tworzy 100 plików errorx.txt z datą i nazwą skryptu"
-        echo "--error n Tworzy n plików errorx.txt z datą i nazwą skryptu"
-        echo "--init    Klonuje repozytorium i dodaje ścieżkę do PATH"
+        help_message
         exit 0
         ;;
         -d|--date)
@@ -22,45 +63,28 @@ do
         exit 0
         ;;
         -l|--logs)
-        if [[ -n $2 && $2 =~ ^[0-9]+$ ]]
-        then
-            num_of_files=$2
-        fi
-        for ((i=1;i<=$num_of_files;i++))
-        do
-            echo "Nazwa pliku: log$i.txt" > log$i.txt
-            echo "Nazwa skryptu: EM51593" >> log$i.txt
-            date >> log$i.txt
-        done
+        create_log_files "$2"
         exit 0
         ;;
         -e|--error)
-        if [[ -n $2 && $2 =~ ^[0-9]+$ ]]
-        then
-            num_of_files=$2
-        fi
-        for ((i=1;i<=$num_of_files;i++))
-        do
-            echo "Nazwa pliku: error$i.txt" > error$i.txt
-            echo "Nazwa skryptu: EM51593" >> error$i.txt
-            date >> error$i.txt
-        done
+        create_error_files "$2"
         exit 0
         ;;
         --init)
-        git clone https://github.com/user/repo.git
-        export PATH=$PATH:/path/to/repo
+        git clone git@github.com:<username>/<repository>.git
+        export PATH=$PATH:$(pwd)/<repository>
+        exit 0
+        ;;
+        --version)
+        display_version
         exit 0
         ;;
         *)
-        echo "Nieznana opcja: $1. Użyj -h lub --help, aby zobaczyć dostępne opcje."
+        echo "Invalid option: $1. Use --help option to see the usage."
         exit 1
         ;;
     esac
     shift
 done
 
-if [[ $# -eq 0 ]]
-then
-    echo "Nie podano argumentów. Użyj -h lub --help, aby zobaczyć dostępne opcje."
-fi
+
